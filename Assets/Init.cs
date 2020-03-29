@@ -7,7 +7,7 @@ public class Init : MonoBehaviour
     // Reference to the Prefab. Drag a Prefab into this field in the Inspector.
     public GameObject myPrefab;
     private Rect world = new Rect(-50, -50, 100, 100);
-    private int elementCount = 2000;
+    private int elementCount = 1000;
 
     // This script will simply instantiate the Prefab when the game starts.
     void Start()

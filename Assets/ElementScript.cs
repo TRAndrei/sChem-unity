@@ -6,14 +6,18 @@ using UnityEngine.EventSystems;
 public class ElementScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     private TargetJoint2D mouseSpring;
-    public Rigidbody2D rigidBody;
+    private Rigidbody2D rigidBody;
+    private UnityEngine.UI.Text textBox;
 
     void Awake()
     {
         mouseSpring = gameObject.GetComponent<TargetJoint2D>();
         mouseSpring.enabled = false;
 
-        rigidBody = gameObject.GetComponent<Rigidbody2D>();        
+        rigidBody = gameObject.GetComponent<Rigidbody2D>();
+        textBox = gameObject.GetComponentInChildren<UnityEngine.UI.Text>();
+
+        textBox.text = "E0";
     }
 
     public void OnBeginDrag(PointerEventData eventData)
