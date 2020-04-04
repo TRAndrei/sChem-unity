@@ -22,4 +22,9 @@ public sealed class RuleKey
     {
         return firstType.GetHashCode() ^ secondType.GetHashCode();
     }
+
+    public override string ToString()
+    {
+        return firstType + "/" + secondType;
+    }
 }

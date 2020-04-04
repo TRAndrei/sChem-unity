@@ -15,6 +15,12 @@ public class Init : MonoBehaviour
     void Start()
     {
         CollisionManager.Instance.Init();
+
+        CollisionManager.Instance.AddRule(new Rule("R1", true, "E0", "E1", "E0", "E1"));
+        CollisionManager.Instance.AddRule(new Rule("R2", true, "E1", "E2", "E1", "E2"));
+        CollisionManager.Instance.AddRule(new Rule("R3", false, "E1", "E1", "E2", "E2"));
+        CollisionManager.Instance.AddRule(new Rule("R4", true, "E2", "E2", "E2", "E2"));
+
         makeWalls();
 
         for (int i = 0; i < elementCount; i++)

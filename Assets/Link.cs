@@ -17,6 +17,8 @@ public class Link
 		this.firstElement = firstElement;
 		this.secondElement = secondElement;
 
+		Debug.Log("Creating link between " + firstElement.name + " and " + secondElement.name);
+
 		dummy = new GameObject();
 		this.line = dummy.AddComponent<LineRenderer>();
 

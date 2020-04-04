@@ -9,7 +9,7 @@ public sealed class CollisionManager
     private Dictionary<string, ElementScript> elements = new Dictionary<string, ElementScript>();
     private Dictionary<LinkKey, Link> links = new Dictionary<LinkKey, Link>();
     private Dictionary<RuleKey, Rule> rules = new Dictionary<RuleKey, Rule>();
-    private Dictionary<RuleKey, List<LinkKey>> activeRules = new Dictionary<RuleKey, List<LinkKey>>();
+    private Dictionary<string, HashSet<LinkKey>> activeRules = new Dictionary<string, HashSet<LinkKey>>();
     private Dictionary<string, HashSet<LinkKey>> elementLinks = new Dictionary<string, HashSet<LinkKey>>();
 
     static CollisionManager()
@@ -38,9 +38,12 @@ public sealed class CollisionManager
 
     public void Init()
     {
-        rules.Add(new RuleKey("E0", "E0"), new Rule("R1", true, "E0", "E1", "E0", "E1"));
-        rules.Add(new RuleKey("E1", "E1"), new Rule("R2", true, "E1", "E2", "E1", "E2"));
-        rules.Add(new RuleKey("E1", "E2"), new Rule("R3", false, "E1", "E1", "E2", "E2"));
+        
+    }
+
+    public void AddRule(Rule rule)
+    {
+        rules.Add(rule.GetRuleKeyInitial(), rule);
     }
 
     public void AddElement(ElementScript elementScript)
@@ -60,16 +63,6 @@ public sealed class CollisionManager
             {
                 rule = applyRule(new RuleKey(secondElement.Type, firstElement.Type), linkKey, secondElement, firstElement);
             }
-
-            if (rule != null)
-            {
-                // check for any links that should updated
-
-                if (rule.firstTypeInitial != rule.firstTypeFinal)
-                {
-
-                }
-            }
         }
     }
 
@@ -82,32 +75,50 @@ public sealed class CollisionManager
             // there is a rule between these two types
             if (rule.hasLink)
             {
-                addLink(rule.type, ruleKey, linkKey, firstElement, secondElement);
+                Debug.Log("Adding link for rule " + rule.type + " between " + firstElement.name + " and " + secondElement.name);
+                addLink(rule.type, linkKey, firstElement, secondElement);
             }
             else
             {
                 // remove any link between these two objects
+                Debug.Log("Removing link for rule " + rule.type + " between " + firstElement.name + " and " + secondElement.name);
                 removeLink(linkKey, firstElement, secondElement);
             }
 
             firstElement.Type = rule.firstTypeFinal;
             secondElement.Type = rule.secondTypeFinal;
 
-            //UpdateLinks(new Queue<string> (new string[] {firstElement.name, secondElement.name }));
+            UpdateLinks(linkKey);
         }
 
         return rule;
     }
 
-    private Link addLink(string ruleType, RuleKey ruleKey, LinkKey linkKey, ElementScript firstElement, ElementScript secondElement)
+    private Link addLink(string ruleType, LinkKey linkKey, ElementScript firstElement, ElementScript secondElement)
     {
-        Link link = new Link(ruleType, firstElement, secondElement);
+        Link link;
+
+        // if link already exists update it with the new rule type
+        if (links.TryGetValue(linkKey, out link))
+        {
+            if (link.type != ruleType)
+            {
+                activeRules[link.type].Remove(linkKey);
+                link.type = ruleType;
+                activeRules[ruleType].Add(linkKey);
+            }
+
+            return link;
+        }
+
+        link = new Link(ruleType, firstElement, secondElement);
         links[linkKey] = link;
 
-        List<LinkKey> linksForRule;
-        if (!activeRules.TryGetValue(ruleKey, out linksForRule))
+        HashSet<LinkKey> linksForRule;
+        if (!activeRules.TryGetValue(ruleType, out linksForRule))
         {
-            linksForRule = new List<LinkKey>();
+            linksForRule = new HashSet<LinkKey>();
+            activeRules.Add(ruleType, linksForRule);
         }
 
         linksForRule.Add(linkKey);
@@ -147,22 +158,39 @@ public sealed class CollisionManager
         elementLinks[secondElement.name].Remove(linkKey);
     }
 
-    private void UpdateLinks(Queue<string> elementsToCheck)
+    private void UpdateLinks(LinkKey originalLinkKey)
     {
-        while(elementsToCheck.Count >0)
-        {
-            string elementName = elementsToCheck.Dequeue();
+        Queue<string> elementsToCheck = new Queue<string>();
+        HashSet<string> processedElements = new HashSet<string>();
+        elementsToCheck.Enqueue(originalLinkKey.first);
+        elementsToCheck.Enqueue(originalLinkKey.second);
+        processedElements.Add(originalLinkKey.first);
+        processedElements.Add(originalLinkKey.second);
 
-            HashSet<LinkKey> neighbors;
-            if (elementLinks.TryGetValue(elementName, out neighbors))
-            {
+        while (elementsToCheck.Count > 0)
+        {
+            string elementName = elementsToCheck.Dequeue();            
+
+            HashSet<LinkKey> neighborsOriginal;
+            if (elementLinks.TryGetValue(elementName, out neighborsOriginal))
+            {                
                 // see if there is a rule between the neighbor's type and the new element's type;
                 ElementScript element = elements[elementName];
 
+                HashSet<LinkKey> neighbors = new HashSet<LinkKey>(neighborsOriginal);
+
                 foreach (LinkKey linkKey in neighbors)
-                {
+                {                   
                     string otherElementName = linkKey.GetOther(elementName);
+
+                    if (processedElements.Contains(otherElementName))
+                    {
+                        continue;
+                    }
+
                     ElementScript otherElement = elements[otherElementName];
+
+                    Debug.Log("Processing link between " + elementName + " and " + otherElementName);
 
                     Rule rule;
 
@@ -171,7 +199,7 @@ public sealed class CollisionManager
                         // there is a rule between these two types
                         if (rule.hasLink)
                         {
-                            addLink(rule.type, new RuleKey(element.Type, otherElement.Type), linkKey, element, otherElement);
+                            addLink(rule.type, linkKey, element, otherElement);
                         }
                         else
                         {
@@ -181,14 +209,15 @@ public sealed class CollisionManager
 
                         element.Type = rule.firstTypeFinal;
                         otherElement.Type = rule.secondTypeFinal;
-                        elementsToCheck.Enqueue(otherElementName);
+                        elementsToCheck.Enqueue(otherElementName);                        
 
-                    } else if (rules.TryGetValue(new RuleKey(otherElement.Type, element.Type), out rule))
+                    }
+                    else if (rules.TryGetValue(new RuleKey(otherElement.Type, element.Type), out rule))
                     {
                         // there is a rule between these two types
                         if (rule.hasLink)
                         {
-                            addLink(rule.type, new RuleKey(otherElement.Type, element.Type), linkKey, otherElement, element);
+                            addLink(rule.type, linkKey, otherElement, element);
                         }
                         else
                         {
@@ -198,7 +227,10 @@ public sealed class CollisionManager
 
                         otherElement.Type = rule.firstTypeFinal;
                         element.Type = rule.secondTypeFinal;
-                        elementsToCheck.Enqueue(otherElementName);
+                        if (!processedElements.Contains(otherElementName))
+                        {
+                            elementsToCheck.Enqueue(otherElementName);
+                        }
                     }
                     else
                     {
@@ -206,6 +238,8 @@ public sealed class CollisionManager
                     }
                 }
             }
+
+            processedElements.Add(elementName);
         }
     }
 

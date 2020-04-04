@@ -28,4 +28,9 @@ public class Rule
 	{
 		return new RuleKey(firstTypeFinal, secondTypeFinal);
 	}
+
+	public override string ToString()
+	{
+		return type;
+	}
 }

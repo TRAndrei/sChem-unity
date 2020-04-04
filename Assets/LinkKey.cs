@@ -2,8 +2,8 @@
 
 public sealed class LinkKey
 {
-    private string first;
-    private string second;
+    public readonly string first;
+    public readonly string second;
 
     public LinkKey(string first, string second)
     {
@@ -33,5 +33,10 @@ public sealed class LinkKey
     public override int GetHashCode()
     {
         return first.GetHashCode() ^ second.GetHashCode();
+    }
+
+    public override string ToString()
+    {
+        return first + "/" + second;
     }
 }
