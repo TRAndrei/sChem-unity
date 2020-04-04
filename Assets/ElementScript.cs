@@ -6,8 +6,9 @@ using UnityEngine.EventSystems;
 public class ElementScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     private TargetJoint2D mouseSpring;
-    private Rigidbody2D rigidBody;
+    public Rigidbody2D rigidBody;
     private UnityEngine.UI.Text textBox;
+    public string type;
 
     void Awake()
     {
@@ -17,7 +18,7 @@ public class ElementScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         rigidBody = gameObject.GetComponent<Rigidbody2D>();
         textBox = gameObject.GetComponentInChildren<UnityEngine.UI.Text>();
 
-        textBox.text = "E0";
+        Type = "E0";
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -40,24 +41,40 @@ public class ElementScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         mouseSpring.enabled = false;
     }
 
+    public string Type
+    {
+        get => type;
+
+        set
+        {
+            textBox.text = value;
+            type = value;
+        }
+    }
+
     void OnCollisionEnter2D(Collision2D collision)
     {
         ElementScript other = collision.gameObject.GetComponent<ElementScript>();
 
-        if (collision.gameObject.tag == "Enemy")
+        if (other != null)
         {
-            collision.gameObject.SendMessage("ApplyDamage", 10);
+            CollisionManager.Instance.AddCollision(this, other);
         }
+    }
+
+    public void RemoveComponent(Object component)
+    {
+        Destroy(component);
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        rigidBody.velocity = new Vector2(Random.Range(-5, 5), Random.Range(-5, 5));
+        rigidBody.velocity = new Vector2(Random.Range(-2, 2), Random.Range(-2, 2));
     }
 
     // Update is called once per frame
-    void Update()
+    void NoUpdate()
     {
 
     }
