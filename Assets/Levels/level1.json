@@ -1,0 +1,43 @@
+{
+	"size": 5,
+	"randomElements": [{
+		"type": "E0",
+		"count": 150
+	}],
+	"elements": [{
+		"id": "a1",
+		"type": "A",
+		"x": 1,
+		"y": 2
+	},
+	{
+		"id": "a2",
+		"type": "A",
+		"x": 2,
+		"y": 2
+	},
+	{
+		"id": "a3",
+		"type": "A",
+		"x": 3,
+		"y": 2
+	}],
+	"links": [{
+		"id": "r",
+		"first": "a1",
+		"second": "a2"
+	},
+	{
+		"id": "r",
+		"first": "a2",
+		"second": "a3"
+	}],
+	"rules": [{
+		"type": "r1",
+		"hasLink": true,
+		"firstTypeInitial": "E0",
+		"firstTypeFinal": "E1",
+		"secondTypeInitial": "E0",
+		"secondTypeFinal": "E1"
+	}]
+}

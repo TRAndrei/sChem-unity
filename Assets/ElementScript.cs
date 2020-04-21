@@ -58,7 +58,7 @@ public class ElementScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
         if (other != null)
         {
-            CollisionManager.Instance.AddCollision(this, other);
+            WorldManager.Instance.AddCollision(this, other);
         }
     }
 
@@ -70,7 +70,7 @@ public class ElementScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     // Start is called before the first frame update
     void Start()
     {
-        //rigidBody.velocity = new Vector2(Random.Range(-2, 2), Random.Range(-2, 2));
+        rigidBody.velocity = new Vector2(Random.Range(-2, 2), Random.Range(-2, 2));
     }
 
     // Update is called once per frame

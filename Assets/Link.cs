@@ -28,7 +28,7 @@ public class Link
 		joint = firstElement.gameObject.AddComponent<SpringJoint2D>();
 		joint.connectedBody = secondElement.rigidBody;
 		joint.distance = 0.4f;
-		joint.frequency = 5;
+		joint.frequency = 2;
 		joint.enableCollision = true;
 	}
 

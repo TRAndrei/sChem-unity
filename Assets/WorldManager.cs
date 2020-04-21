@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class CollisionManager
+public sealed class WorldManager
 {
-    private static readonly CollisionManager instance = new CollisionManager();
+    private static readonly WorldManager instance = new WorldManager();
 
     private Dictionary<string, ElementScript> elements = new Dictionary<string, ElementScript>();
     private Dictionary<LinkKey, Link> links = new Dictionary<LinkKey, Link>();
@@ -12,15 +12,15 @@ public sealed class CollisionManager
     private Dictionary<string, HashSet<LinkKey>> activeRules = new Dictionary<string, HashSet<LinkKey>>();
     private Dictionary<string, HashSet<LinkKey>> elementLinks = new Dictionary<string, HashSet<LinkKey>>();
 
-    static CollisionManager()
+    static WorldManager()
     {
     }
 
-    private CollisionManager()
+    private WorldManager()
     {
     }
 
-    public static CollisionManager Instance
+    public static WorldManager Instance
     {
         get
         {
@@ -38,13 +38,19 @@ public sealed class CollisionManager
 
     public void Init()
     {
-        
+        elements.Clear();
+        links.Clear();
+        rules.Clear();
+        activeRules.Clear();
+        elementLinks.Clear();
     }
 
     public void AddRule(Rule rule)
     {
         rules.Add(rule.GetRuleKeyInitial(), rule);
     }
+
+
 
     public void AddElement(ElementScript elementScript)
     {
@@ -92,6 +98,11 @@ public sealed class CollisionManager
         }
 
         return rule;
+    }
+
+    public void AddLink(string ruleType, string firstName, string secondName)
+    {
+        addLink(ruleType, new LinkKey(firstName, secondName), elements[firstName], elements[secondName]);
     }
 
     private Link addLink(string ruleType, LinkKey linkKey, ElementScript firstElement, ElementScript secondElement)
